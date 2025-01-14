@@ -1,11 +1,15 @@
-import Image from "next/image";
+import CallToAction from "../components/call-to-action";
+import FeaturedProducts from "../components/featured-products";
+import Footer from "../components/footer";
 
 export default function Home() {
   return (
-    <div className="flex flex-col items-center justify-between p-24">
-      <h1 className="text-4xl font-bold text-center">
-        Welcome to your new Next.js project!
-      </h1>
+    <div className="flex min-h-screen flex-col">
+      <main className="flex-grow">
+        <FeaturedProducts />
+        <CallToAction />
+      </main>
+      <Footer />
     </div>
   );
 }

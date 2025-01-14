@@ -29,36 +29,54 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthService {
 
-  private final UserRepository userRepository;
-  private final AuthenticationManager authenticationManager;
-  private SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
-  SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
+    private final UserRepository userRepository;
+    private final AuthenticationManager authenticationManager;
+    private SecurityContextRepository securityContextRepository =
+        new HttpSessionSecurityContextRepository();
+    SecurityContextLogoutHandler logoutHandler =
+        new SecurityContextLogoutHandler();
 
-  /**
-   * Sets the cookie for the user if the username and password are correct
-   */
-  public void login(HttpServletRequest request,
-      HttpServletResponse response,
-      LoginRequest body
-  ) throws AuthenticationException {
-    UsernamePasswordAuthenticationToken token = UsernamePasswordAuthenticationToken.unauthenticated(body.getEmail(), body.getPassword());
-    Authentication authentication = authenticationManager.authenticate(token);
-    SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
-    SecurityContext context = securityContextHolderStrategy.createEmptyContext();
-    context.setAuthentication(authentication);
-    securityContextHolderStrategy.setContext(context);
-    securityContextRepository.saveContext(context, request, response);
-  }
+    /**
+     * Sets the cookie for the user if the username and password are correct
+     */
+    public void login(
+        HttpServletRequest request,
+        HttpServletResponse response,
+        LoginRequest body
+    ) throws AuthenticationException {
+        UsernamePasswordAuthenticationToken token =
+            UsernamePasswordAuthenticationToken.unauthenticated(
+                body.getEmail(),
+                body.getPassword()
+            );
+        Authentication authentication = authenticationManager.authenticate(
+            token
+        );
+        SecurityContextHolderStrategy securityContextHolderStrategy =
+            SecurityContextHolder.getContextHolderStrategy();
+        SecurityContext context =
+            securityContextHolderStrategy.createEmptyContext();
+        context.setAuthentication(authentication);
+        securityContextHolderStrategy.setContext(context);
+        securityContextRepository.saveContext(context, request, response);
+    }
 
-  @Transactional
-  public UserResponse getSession(HttpServletRequest request) {
-    User user = SecurityUtil.getAuthenticatedUser();
-    Collection<? extends GrantedAuthority> authorities = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-    return new UserResponse(user, authorities);
-  }
+    @Transactional
+    public UserResponse getSession(HttpServletRequest request) {
+        User user = SecurityUtil.getAuthenticatedUser();
+        Collection<? extends GrantedAuthority> authorities =
+            SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getAuthorities();
+        return new UserResponse(user, authorities);
+    }
 
-  public void logout(HttpServletRequest request, HttpServletResponse response) {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    this.logoutHandler.logout(request, response, authentication);
-  }
+    public void logout(
+        HttpServletRequest request,
+        HttpServletResponse response
+    ) {
+        Authentication authentication = SecurityContextHolder.getContext()
+            .getAuthentication();
+        this.logoutHandler.logout(request, response, authentication);
+    }
 }

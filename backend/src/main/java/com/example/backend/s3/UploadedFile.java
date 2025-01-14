@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,38 +18,40 @@ import org.hibernate.annotations.CreationTimestamp;
 @NoArgsConstructor
 public class UploadedFile extends AbstractEntity {
 
-  private String url;
-  private Long size;
-  private String originalFileName;
-  private String extension;
-  @CreationTimestamp
-  private LocalDateTime createdAt;
-  private LocalDateTime uploadedAt;
+    private String url;
+    private Long size;
+    private String originalFileName;
+    private String extension;
 
-  @ManyToOne
-  @JsonIgnore
-  private User user;
+    @CreationTimestamp
+    private Date createdAt;
 
-  public UploadedFile(String originalFileName, Long size, User user) {
-    this.originalFileName = originalFileName;
-    this.size = size;
-    this.user = user;
-    this.extension = FilenameUtils.getExtension(originalFileName);
-  }
+    private LocalDateTime uploadedAt;
 
-  public void onUploaded(String url) {
-    this.url = url;
-    this.uploadedAt = LocalDateTime.now();
-  }
+    @ManyToOne
+    @JsonIgnore
+    private User user;
 
-  public String buildPath(String ...path) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("user:").append(user.getId()).append("/");
-    for (String p : path) {
-      sb.append(p).append("/");
+    public UploadedFile(String originalFileName, Long size, User user) {
+        this.originalFileName = originalFileName;
+        this.size = size;
+        this.user = user;
+        this.extension = FilenameUtils.getExtension(originalFileName);
     }
-    sb.append(UUID.randomUUID());
-    sb.append(".").append(extension);
-    return sb.toString();
-  }
+
+    public void onUploaded(String url) {
+        this.url = url;
+        this.uploadedAt = LocalDateTime.now();
+    }
+
+    public String buildPath(String... path) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("user:").append(user.getId()).append("/");
+        for (String p : path) {
+            sb.append(p).append("/");
+        }
+        sb.append(UUID.randomUUID());
+        sb.append(".").append(extension);
+        return sb.toString();
+    }
 }

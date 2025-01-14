@@ -13,14 +13,16 @@ import org.apache.commons.lang3.RandomStringUtils;
 @NoArgsConstructor
 public class VerificationCode extends AbstractEntity {
 
-  private String code;
-  @Setter
-  private boolean emailSent = false;
-  @OneToOne
-  private User user;
+    private String code;
 
-  public VerificationCode(User user) {
-    this.user = user;
-    this.code = RandomStringUtils.random(6, false, true);
-  }
+    @Setter
+    private boolean emailSent = false;
+
+    @OneToOne
+    private User user;
+
+    public VerificationCode(User user) {
+        this.user = user;
+        this.code = RandomStringUtils.random(6, false, true);
+    }
 }

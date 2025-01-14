@@ -28,21 +28,18 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={cn(
-          "min-h-screen bg-background font-sans antialiased",
+          "min-h-screen bg-background font-sans antialiased scroll-gutter",
           fontSans.variable
         )}
       >
         <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <Navbar className="h-[70px] sticky top-0"/>
-            <main>
-              {children}
-            </main>
-
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Navbar className="h-[80px] sticky top-0" />
+          <main>{children}</main>
         </ThemeProvider>
         <Toaster />
       </body>

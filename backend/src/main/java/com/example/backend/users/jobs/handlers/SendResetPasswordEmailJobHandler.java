@@ -16,31 +16,44 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 
 @Component
 @RequiredArgsConstructor
-public class SendResetPasswordEmailJobHandler implements JobRequestHandler<SendResetPasswordEmailJob> {
+public class SendResetPasswordEmailJobHandler
+    implements JobRequestHandler<SendResetPasswordEmailJob> {
 
-  private final PasswordResetTokenRepository passwordResetTokenRepository;
-  private final EmailService emailService;
-  private final ApplicationProperties applicationProperties;
-  private final SpringTemplateEngine templateEngine;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final EmailService emailService;
+    private final ApplicationProperties applicationProperties;
+    private final SpringTemplateEngine templateEngine;
 
-  @Override
-  @Transactional
-  public void run(SendResetPasswordEmailJob sendResetPasswordEmailJob) throws Exception {
-    PasswordResetToken resetToken = passwordResetTokenRepository.findById(sendResetPasswordEmailJob.getTokenId())
-        .orElseThrow(() -> new IllegalArgumentException("Token not found"));
-    if (!resetToken.isEmailSent()) {
-      sendResetPasswordEmail(resetToken.getUser(), resetToken);
+    @Override
+    @Transactional
+    public void run(SendResetPasswordEmailJob sendResetPasswordEmailJob)
+        throws Exception {
+        PasswordResetToken resetToken = passwordResetTokenRepository
+            .findById(sendResetPasswordEmailJob.getTokenId())
+            .orElseThrow(() -> new IllegalArgumentException("Token not found"));
+        if (!resetToken.isEmailSent()) {
+            sendResetPasswordEmail(resetToken.getUser(), resetToken);
+        }
     }
-  }
 
-  private void sendResetPasswordEmail(User user, PasswordResetToken token) {
-    String link = applicationProperties.getBaseUrl() + "/auth/reset-password?token=" + token.getToken();
-    Context thymeleafContext = new Context();
-    thymeleafContext.setVariable("user", user);
-    thymeleafContext.setVariable("link", link);
-    String htmlBody = templateEngine.process("password-reset", thymeleafContext);
-    emailService.sendHtmlMessage(List.of(user.getEmail()), "Password reset requested", htmlBody);
-    token.onEmailSent();
-    passwordResetTokenRepository.save(token);
-  }
+    private void sendResetPasswordEmail(User user, PasswordResetToken token) {
+        String link =
+            applicationProperties.getBaseUrl() +
+            "/auth/reset-password?token=" +
+            token.getToken();
+        Context thymeleafContext = new Context();
+        thymeleafContext.setVariable("user", user);
+        thymeleafContext.setVariable("link", link);
+        String htmlBody = templateEngine.process(
+            "password-reset",
+            thymeleafContext
+        );
+        emailService.sendHtmlMessage(
+            List.of(user.getEmail()),
+            "Password reset requested",
+            htmlBody
+        );
+        token.onEmailSent();
+        passwordResetTokenRepository.save(token);
+    }
 }

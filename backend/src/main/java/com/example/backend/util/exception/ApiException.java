@@ -7,7 +7,8 @@ import lombok.Getter;
 @Getter
 @Builder
 public class ApiException extends RuntimeException {
-  private String message;
-  private int status = 400;
-  private Map<String, String> errors;
+
+    private String message;
+    private int status = 400;
+    private Map<String, String> errors;
 }

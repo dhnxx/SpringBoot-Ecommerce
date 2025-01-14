@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface VerificationCodeRepository extends JpaRepository<VerificationCode, Long> {
-
-  @Query("SELECT vc FROM VerificationCode vc WHERE vc.code = :code")
-  Optional<VerificationCode> findByCode(String code);
+public interface VerificationCodeRepository
+    extends JpaRepository<VerificationCode, Long> {
+    @Query("SELECT vc FROM VerificationCode vc WHERE vc.code = :code")
+    Optional<VerificationCode> findByCode(String code);
 }

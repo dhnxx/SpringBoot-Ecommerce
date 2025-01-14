@@ -16,15 +16,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AdminUsersController {
 
-  private final AdminUserService userService;
+    private final AdminUserService userService;
 
-  @GetMapping
-  @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<PagedResponse<UserResponse>> getUsers(
-      @RequestParam(value = "page", defaultValue = "0") int page
-  ) {
-    PagedResponse<UserResponse> users = userService.getUsers(page);
-    return ResponseEntity.ok(users);
-  }
-
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<PagedResponse<UserResponse>> getUsers(
+        @RequestParam(value = "page", defaultValue = "0") int page
+    ) {
+        PagedResponse<UserResponse> users = userService.getUsers(page);
+        return ResponseEntity.ok(users);
+    }
 }

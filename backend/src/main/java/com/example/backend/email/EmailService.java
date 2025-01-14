@@ -15,28 +15,39 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class EmailService {
 
-  private final JavaMailSender emailSender;
+    private final JavaMailSender emailSender;
 
-  public void sendHtmlMessage(List<String> to, String subject, String htmlBody){
-    try {
-      MimeMessage message = emailSender.createMimeMessage();
-      MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-      helper.setTo(to.toArray(new String[0]));
-      helper.setSubject(subject);
-      helper.setText(htmlBody, true);
-      emailSender.send(message);
-    } catch (MessagingException e) {
-      throw new RuntimeException("Error sending email", e);
+    public void sendHtmlMessage(
+        List<String> to,
+        String subject,
+        String htmlBody
+    ) {
+        try {
+            MimeMessage message = emailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(
+                message,
+                true,
+                "UTF-8"
+            );
+            helper.setTo(to.toArray(new String[0]));
+            helper.setSubject(subject);
+            helper.setText(htmlBody, true);
+            emailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Error sending email", e);
+        }
     }
-  }
 
-  public void sendSimpleEmail(List<String> to, String subject, String content) {
-    log.info("Sending email to: {}", to);
-    SimpleMailMessage message = new SimpleMailMessage();
-    message.setTo(to.toArray(new String[0]));
-    message.setSubject(subject);
-    message.setText(content);
-    emailSender.send(message);
-  }
-
+    public void sendSimpleEmail(
+        List<String> to,
+        String subject,
+        String content
+    ) {
+        log.info("Sending email to: {}", to);
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to.toArray(new String[0]));
+        message.setSubject(subject);
+        message.setText(content);
+        emailSender.send(message);
+    }
 }

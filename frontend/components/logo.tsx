@@ -1,11 +1,18 @@
-"use client"
+"use client";
 
-import Link from "next/link"
+import Link from "next/link";
+import { useAuthGuard } from "@/lib/auth/use-auth";
 
 export default function Logo() {
+    const { user } = useAuthGuard({ middleware: "guest" });
   return (
-    <Link href={"/"}>
-      <img src="/images/logo.png" alt="hirebalkan logo" className="w-10 h-10 rounded-md"></img>
-    </Link>
-  )
+    <div className="flex items-center">
+      <Link
+        href={!user ? "/" : "/products"}
+        className="text-2xl font-bold text-primary"
+      >
+        EcoShop
+      </Link>
+    </div>
+  );
 }

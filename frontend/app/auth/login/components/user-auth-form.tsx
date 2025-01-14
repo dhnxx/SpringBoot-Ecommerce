@@ -25,7 +25,7 @@ const loginFormSchema = z.object({
 type Schema = z.infer<typeof loginFormSchema>;
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
-  const {login} = useAuthGuard({middleware: 'guest', redirectIfAuthenticated: '/profile'});
+  const {login} = useAuthGuard({middleware: 'guest', redirectIfAuthenticated: '/products'});
   const [errors, setErrors] = React.useState<HttpErrorResponse | undefined>(undefined);
 
   async function onSubmit(data: Schema) {
@@ -46,7 +46,8 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   });
 
   function getProviderLoginUrl(provider: 'google' | 'facebook' | 'github' | 'okta') {
-    return process.env.NEXT_PUBLIC_BASE_URL + `/oauth2/authorization/${provider}`
+    // return process.env.NEXT_PUBLIC_BASE_URL + `/oauth2/authorization/${provider}`
+    return `/oauth2/authorization/${provider}`
   }
 
   return (

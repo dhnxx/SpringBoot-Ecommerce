@@ -13,11 +13,12 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AdminUserService {
-  private final UserRepository userRepository;
 
-  public PagedResponse<UserResponse> getUsers(int page) {
-    Pageable pageable = PageRequest.of(page, 10);
-    Page<User> users = userRepository.findAll(pageable);
-    return new PagedResponse<>(users.map(UserResponse::new));
-  }
+    private final UserRepository userRepository;
+
+    public PagedResponse<UserResponse> getUsers(int page) {
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<User> users = userRepository.findAll(pageable);
+        return new PagedResponse<>(users.map(UserResponse::new));
+    }
 }

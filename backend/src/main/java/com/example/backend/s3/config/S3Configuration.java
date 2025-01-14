@@ -10,10 +10,11 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 @Getter
 public class S3Configuration {
-  private String bucketName;
-  private String region;
-  private String accessKey;
-  private String secretKey;
-  private String baseUrl;
-  private String storageClass;
+
+    private String bucketName;
+    private String region;
+    private String accessKey;
+    private String secretKey;
+    private String baseUrl;
+    private String storageClass;
 }

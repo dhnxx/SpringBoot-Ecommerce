@@ -1,9 +1,11 @@
 package com.example.backend.users;
 
+import com.example.backend.cart.Cart;
 import com.example.backend.entity.AbstractEntity;
 import com.example.backend.users.data.CreateUserRequest;
 import com.example.backend.users.data.UpdateUserRequest;
 import com.example.backend.util.ApplicationContextProvider;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -24,101 +26,120 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 /**
- * User is an entity that can be authenticated and authorized to access the application.
+ * User is an entity that can be authenticated and authorized to access the
+ * application.
  */
 @Entity
 @Getter
 @NoArgsConstructor
 public class User extends AbstractEntity implements UserDetails {
-  private String email;
-  private String password;
-  private String firstName;
-  private String lastName;
-  @Setter
-  private boolean verified = false;
-  @Setter
-  private String profileImageUrl;
-  @Enumerated(EnumType.STRING)
-  @Setter
-  private Role role;
 
-  @Setter
-  @OneToOne(mappedBy = "user")
-  private VerificationCode verificationCode;
+    private String email;
+    private String password;
+    private String firstName;
+    private String lastName;
 
-  @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
-  private List<UserConnectedAccount> connectedAccounts = new ArrayList<>();
+    @Setter
+    private boolean verified = false;
 
+    @Setter
+    private String profileImageUrl;
 
-  public User(CreateUserRequest data) {
-    PasswordEncoder passwordEncoder = ApplicationContextProvider.bean(PasswordEncoder.class);
-    this.email = data.getEmail();
-    this.password = passwordEncoder.encode(data.getPassword());
-    this.firstName = data.getFirstName();
-    this.lastName = data.getLastName();
-    this.role = Role.USER;
-  }
+    @Enumerated(EnumType.STRING)
+    @Setter
+    private Role role;
 
-  public User (OAuth2User oAuth2User) {
-    User user = new User();
-    user.email = oAuth2User.getAttribute("email");
-    String name = oAuth2User.getAttribute("name");
-    if (name != null) {
-      List<String> names = List.of(name.split(" "));
-      if (names.size() > 1) {
-        user.firstName = names.get(0);
-        user.lastName = names.get(1);
-      } else {
-        user.firstName = names.getFirst();
-      }
+    @Setter
+    @OneToOne(mappedBy = "user")
+    private VerificationCode verificationCode;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    private List<UserConnectedAccount> connectedAccounts = new ArrayList<>();
+
+    @Setter
+    @OneToOne(
+        mappedBy = "user",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )
+    private Cart cart;
+
+    public User(CreateUserRequest data) {
+        PasswordEncoder passwordEncoder = ApplicationContextProvider.bean(
+            PasswordEncoder.class
+        );
+        this.email = data.getEmail();
+        this.password = passwordEncoder.encode(data.getPassword());
+        this.firstName = data.getFirstName();
+        this.lastName = data.getLastName();
+        this.role = Role.USER;
     }
-    user.verified = true;
-    user.role = Role.USER;
-  }
 
-  public void addConnectedAccount(UserConnectedAccount connectedAccount) {
-    connectedAccounts.add(connectedAccount);
-  }
+    public User(OAuth2User oAuth2User) {
+        User user = new User();
+        user.email = oAuth2User.getAttribute("email");
+        String name = oAuth2User.getAttribute("name");
+        if (name != null) {
+            List<String> names = List.of(name.split(" "));
+            if (names.size() > 1) {
+                user.firstName = names.get(0);
+                user.lastName = names.get(1);
+            } else {
+                user.firstName = names.getFirst();
+            }
+        }
+        user.verified = true;
+        user.role = Role.USER;
+    }
 
-  public void update(UpdateUserRequest request) {
-    this.firstName = request.getFirstName();
-    this.lastName = request.getLastName();
-  }
+    public void addConnectedAccount(UserConnectedAccount connectedAccount) {
+        connectedAccounts.add(connectedAccount);
+    }
 
-  public void updatePassword(String newPassword) {
-    PasswordEncoder passwordEncoder = ApplicationContextProvider.bean(PasswordEncoder.class);
-    this.password = passwordEncoder.encode(newPassword);
-  }
+    public void update(UpdateUserRequest request) {
+        this.firstName = request.getFirstName();
+        this.lastName = request.getLastName();
+    }
 
-  @Override
-  public Collection<? extends GrantedAuthority> getAuthorities() {
-    return Collections.singleton(new SimpleGrantedAuthority("ROLE_" + role.name()));
-  }
+    public void updatePassword(String newPassword) {
+        PasswordEncoder passwordEncoder = ApplicationContextProvider.bean(
+            PasswordEncoder.class
+        );
+        this.password = passwordEncoder.encode(newPassword);
+    }
 
-  @Override
-  public String getUsername() {
-    return email;
-  }
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.singleton(
+            new SimpleGrantedAuthority("ROLE_" + role.name())
+        );
+    }
 
-  @Override
-  public boolean isAccountNonExpired() {
-    return true;
-  }
+    @Override
+    public String getUsername() {
+        return email;
+    }
 
-  @Override
-  public boolean isAccountNonLocked() {
-    return true;
-  }
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
 
-  @Override
-  public boolean isCredentialsNonExpired() {
-    return true;
-  }
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
 
-  // If you want to not allow the user to login before verifying their email, you can change this to
-  // return verified;
-  @Override
-  public boolean isEnabled() {
-    return true;
-  }
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    // If you want to not allow the user to login before verifying their email, you
+    // can change this to
+    // return verified;
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }

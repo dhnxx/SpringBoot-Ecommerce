@@ -32,99 +32,137 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class UserService {
 
-  private final UserRepository userRepository;
-  private final VerificationCodeRepository verificationCodeRepository;
-  private final PasswordResetTokenRepository passwordResetTokenRepository;
-  private final UploadedFileRepository uploadedFileRepository;
-  private final PasswordEncoder passwordEncoder;
-  private final FileUploadService fileUploadService;
+    private final UserRepository userRepository;
+    private final VerificationCodeRepository verificationCodeRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final UploadedFileRepository uploadedFileRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final FileUploadService fileUploadService;
 
-  @Transactional
-  public UserResponse create(@Valid CreateUserRequest request) {
-    User user = new User(request);
-    user = userRepository.save(user);
-    sendVerificationEmail(user);
-    return new UserResponse(user);
-  }
-
-  private void sendVerificationEmail(User user) {
-    VerificationCode verificationCode = new VerificationCode(user);
-    user.setVerificationCode(verificationCode);
-    verificationCodeRepository.save(verificationCode);
-    SendWelcomeEmailJob sendWelcomEmailJob = new SendWelcomeEmailJob(user.getId());
-    BackgroundJobRequest.enqueue(sendWelcomEmailJob);
-  }
-
-  @Transactional
-  public void verifyEmail(String code) {
-    VerificationCode verificationCode = verificationCodeRepository.findByCode(code)
-        .orElseThrow(() -> ApiException.builder().status(400).message("Invalid token").build());
-    User user = verificationCode.getUser();
-    user.setVerified(true);
-    userRepository.save(user);
-    verificationCodeRepository.delete(verificationCode);
-  }
-
-  @Transactional
-  public void forgotPassword(String email) {
-    User user = userRepository.findByEmail(email)
-        .orElseThrow(() -> ApiException.builder().status(404).message("User not found").build());
-    PasswordResetToken passwordResetToken = new PasswordResetToken(user);
-    passwordResetTokenRepository.save(passwordResetToken);
-    SendResetPasswordEmailJob sendResetPasswordEmailJob = new SendResetPasswordEmailJob(passwordResetToken.getId());
-    BackgroundJobRequest.enqueue(sendResetPasswordEmailJob);
-  }
-
-  @Transactional
-  public void resetPassword(UpdateUserPasswordRequest request) {
-    PasswordResetToken passwordResetToken = passwordResetTokenRepository.findByToken(request.getPasswordResetToken())
-        .orElseThrow(() -> ApiException.builder().status(404).message("Password reset token not found").build());
-
-    if (passwordResetToken.isExpired()) {
-      throw ApiException.builder().status(400).message("Password reset token is expired").build();
+    @Transactional
+    public UserResponse create(@Valid CreateUserRequest request) {
+        User user = new User(request);
+        user = userRepository.save(user);
+        sendVerificationEmail(user);
+        return new UserResponse(user);
     }
 
-    User user = passwordResetToken.getUser();
-    user.updatePassword(request.getPassword());
-    userRepository.save(user);
-  }
-
-  @Transactional
-  public UserResponse update(UpdateUserRequest request) {
-    User user = SecurityUtil.getAuthenticatedUser();
-    user = userRepository.getReferenceById(user.getId());
-    user.update(request);
-    user = userRepository.save(user);
-    return new UserResponse(user);
-  }
-
-  @Transactional
-  public UserResponse updatePassword(UpdateUserPasswordRequest request) {
-    User user = SecurityUtil.getAuthenticatedUser();
-    if (user.getPassword() != null && !passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
-      throw ApiException.builder().status(400).message("Wrong password").build();
+    private void sendVerificationEmail(User user) {
+        VerificationCode verificationCode = new VerificationCode(user);
+        user.setVerificationCode(verificationCode);
+        verificationCodeRepository.save(verificationCode);
+        SendWelcomeEmailJob sendWelcomEmailJob = new SendWelcomeEmailJob(
+            user.getId()
+        );
+        BackgroundJobRequest.enqueue(sendWelcomEmailJob);
     }
 
-    user.updatePassword(request.getPassword());
-    user = userRepository.save(user);
-    return new UserResponse(user);
-  }
-
-  public UserResponse updateProfilePicture(MultipartFile file) {
-    User user = SecurityUtil.getAuthenticatedUser();
-    UploadedFile uploadedFile = new UploadedFile(file.getOriginalFilename(), file.getSize(), user);
-    try {
-      String url = fileUploadService.uploadFile(
-          uploadedFile.buildPath("profile-picture"),
-          file.getBytes());
-      uploadedFile.onUploaded(url);
-      user.setProfileImageUrl(url);
-      userRepository.save(user);
-      uploadedFileRepository.save(uploadedFile);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+    @Transactional
+    public void verifyEmail(String code) {
+        VerificationCode verificationCode = verificationCodeRepository
+            .findByCode(code)
+            .orElseThrow(() ->
+                ApiException.builder()
+                    .status(400)
+                    .message("Invalid token")
+                    .build()
+            );
+        User user = verificationCode.getUser();
+        user.setVerified(true);
+        userRepository.save(user);
+        verificationCodeRepository.delete(verificationCode);
     }
 
-    return new UserResponse(user);
-  }
+    @Transactional
+    public void forgotPassword(String email) {
+        User user = userRepository
+            .findByEmail(email)
+            .orElseThrow(() ->
+                ApiException.builder()
+                    .status(404)
+                    .message("User not found")
+                    .build()
+            );
+        PasswordResetToken passwordResetToken = new PasswordResetToken(user);
+        passwordResetTokenRepository.save(passwordResetToken);
+        SendResetPasswordEmailJob sendResetPasswordEmailJob =
+            new SendResetPasswordEmailJob(passwordResetToken.getId());
+        BackgroundJobRequest.enqueue(sendResetPasswordEmailJob);
+    }
+
+    @Transactional
+    public void resetPassword(UpdateUserPasswordRequest request) {
+        PasswordResetToken passwordResetToken = passwordResetTokenRepository
+            .findByToken(request.getPasswordResetToken())
+            .orElseThrow(() ->
+                ApiException.builder()
+                    .status(404)
+                    .message("Password reset token not found")
+                    .build()
+            );
+
+        if (passwordResetToken.isExpired()) {
+            throw ApiException.builder()
+                .status(400)
+                .message("Password reset token is expired")
+                .build();
+        }
+
+        User user = passwordResetToken.getUser();
+        user.updatePassword(request.getPassword());
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public UserResponse update(UpdateUserRequest request) {
+        User user = SecurityUtil.getAuthenticatedUser();
+        user = userRepository.getReferenceById(user.getId());
+        user.update(request);
+        user = userRepository.save(user);
+        return new UserResponse(user);
+    }
+
+    @Transactional
+    public UserResponse updatePassword(UpdateUserPasswordRequest request) {
+        User user = SecurityUtil.getAuthenticatedUser();
+        if (
+            user.getPassword() != null &&
+            !passwordEncoder.matches(
+                request.getOldPassword(),
+                user.getPassword()
+            )
+        ) {
+            throw ApiException.builder()
+                .status(400)
+                .message("Wrong password")
+                .build();
+        }
+
+        user.updatePassword(request.getPassword());
+        user = userRepository.save(user);
+        return new UserResponse(user);
+    }
+
+    public UserResponse updateProfilePicture(MultipartFile file) {
+        User user = SecurityUtil.getAuthenticatedUser();
+        UploadedFile uploadedFile = new UploadedFile(
+            file.getOriginalFilename(),
+            file.getSize(),
+            user
+        );
+        try {
+            String url = fileUploadService.uploadFile(
+                uploadedFile.buildPath("profile-picture"),
+                file.getBytes()
+            );
+            uploadedFile.onUploaded(url);
+            user.setProfileImageUrl(url);
+            userRepository.save(user);
+            uploadedFileRepository.save(uploadedFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return new UserResponse(user);
+    }
 }

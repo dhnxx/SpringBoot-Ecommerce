@@ -12,10 +12,10 @@ import org.jobrunr.jobs.lambdas.JobRequestHandler;
 @NoArgsConstructor
 public class SendResetPasswordEmailJob implements JobRequest {
 
-  private Long tokenId;
+    private Long tokenId;
 
-  @Override
-  public Class<? extends JobRequestHandler> getJobRequestHandler() {
-    return SendResetPasswordEmailJobHandler.class;
-  }
+    @Override
+    public Class<? extends JobRequestHandler> getJobRequestHandler() {
+        return SendResetPasswordEmailJobHandler.class;
+    }
 }

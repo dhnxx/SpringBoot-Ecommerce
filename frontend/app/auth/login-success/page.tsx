@@ -13,7 +13,7 @@ export default function page() {
     const interval = setInterval(() => {
       setCounter((prev) => prev - 1)
       if (counter === 1) {
-        router.push('/profile')
+        router.push('/products')
       }
     }, 1000)
 
@@ -24,7 +24,7 @@ export default function page() {
     <div className='flex h-screen w-full justify-center items-center flex-col gap-8 mt-4 md:mt-0'>
       <IoShieldCheckmark className='text-9xl text-primary' />
       <h2 className='text-4xl font-bold'>You're logged in!</h2>
-      <p className='text-lg'>Redirecting to your profile in {counter} seconds...</p>
+      <p className='text-lg'>Redirecting to your home page in {counter} seconds...</p>
       <Link href={"/"} className='text-primary underline'>Take me home</Link>
     </div>
   )

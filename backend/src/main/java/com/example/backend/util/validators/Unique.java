@@ -7,11 +7,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 @Constraint(validatedBy = UniqueValidator.class)
-@Target({ElementType.FIELD})
+@Target({ ElementType.FIELD })
 @Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
 @Documented
 public @interface Unique {
-
     String message() default "Field must be unique";
 
     Class<?>[] groups() default {};
@@ -19,6 +18,6 @@ public @interface Unique {
     Class<?>[] payload() default {};
 
     String columnName();
-    String tableName();
 
+    String tableName();
 }
